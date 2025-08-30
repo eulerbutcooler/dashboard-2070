@@ -420,6 +420,31 @@ export default function Dashboard() {
     >
       {/* No blur overlay after upload */}
       
+      {/* Find Safehouses Button */}
+      <motion.div
+        className="fixed top-8 left-8 z-10"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <motion.a
+          href="https://wikisillygoose.eulerbutcooler.tech"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block bg-black/60 backdrop-blur-md border border-white/20 rounded-lg p-6 w-80 hover:bg-black/70 transition-all duration-300"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <div className="flex items-center space-x-3">
+            <div className="text-2xl">🏠</div>
+            <div>
+              <h2 className="text-white text-xl font-bold">SAFEHOUSES</h2>
+              <p className="text-white/70 text-sm">Find shelter & safety</p>
+            </div>
+          </div>
+        </motion.a>
+      </motion.div>
+      
       {/* Animated Character cycling through images */}
       <motion.div
         className="fixed bottom-16 left-1/2 transform -translate-x-1/2 z-10"
