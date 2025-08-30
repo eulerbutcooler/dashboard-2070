@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, X, Heart, Wind, Droplets, Radio } from 'lucide-react'
 import Image from 'next/image'
+import WebrtcChat from './WebrtcChat'
 
 export default function Dashboard() {
   const [showDashboard, setShowDashboard] = useState(false)
@@ -21,8 +22,14 @@ export default function Dashboard() {
   const [gameOver, setGameOver] = useState(false)
   const [nextPopupTime, setNextPopupTime] = useState(0)
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0)
+  const [showChat, setShowChat] = useState(false)
+  const [chatMessages, setChatMessages] = useState<{id: string, sender: string, message: string, timestamp: Date}[]>([])
+  const [newMessage, setNewMessage] = useState('')
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null)
+  const [isConnected, setIsConnected] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const chatVideoRef = useRef<HTMLVideoElement>(null)
 
   const charImages = ['/char2.png', '/char3.png']
   
@@ -286,6 +293,61 @@ export default function Dashboard() {
     startCamera()
   }
 
+  const toggleChat = () => {
+    setShowChat(!showChat)
+    if (!showChat && !localStream) {
+      startChatVideo()
+    }
+  }
+
+  const startChatVideo = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { width: 320, height: 240 }, 
+        audio: true 
+      })
+      setLocalStream(stream)
+      if (chatVideoRef.current) {
+        chatVideoRef.current.srcObject = stream
+      }
+      setIsConnected(true)
+    } catch (error) {
+      console.error('Error accessing camera for chat:', error)
+    }
+  }
+
+  const stopChatVideo = () => {
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop())
+      setLocalStream(null)
+      setIsConnected(false)
+    }
+  }
+
+  const sendMessage = () => {
+    if (newMessage.trim()) {
+      const message = {
+        id: Date.now().toString(),
+        sender: 'You',
+        message: newMessage.trim(),
+        timestamp: new Date()
+      }
+      setChatMessages(prev => [...prev, message])
+      setNewMessage('')
+      
+      // Simulate a response (in real implementation, this would come from WebRTC peer)
+      setTimeout(() => {
+        const response = {
+          id: (Date.now() + 1).toString(),
+          sender: 'Survivor',
+          message: 'Copy that, stay safe out there!',
+          timestamp: new Date()
+        }
+        setChatMessages(prev => [...prev, response])
+      }, 1000)
+    }
+  }
+
   // Show start screen if dashboard hasn't been initialized
   if (!showDashboard) {
     return (
@@ -443,6 +505,16 @@ export default function Dashboard() {
             </div>
           </div>
         </motion.a>
+      </motion.div>
+      
+      {/* WebRTC Chat Component */}
+      <motion.div
+        className="fixed left-8 bottom-8 z-10"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <WebrtcChat />
       </motion.div>
       
       {/* Animated Character cycling through images */}
